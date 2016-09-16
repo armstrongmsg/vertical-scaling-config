@@ -63,7 +63,12 @@ plot_scaling_period <- function(total_time, cpu_usage) {
   scaling_time_data <- arrange(scaling_time_data, dependent_variable, scaling_period, cap_change_start_cap)
   
   limits <- aes(ymax = scaling_time_data$high, ymin = scaling_time_data$low)
-  ggplot(scaling_time_data, aes(x=cap_change_start_cap,y=(high+low)/2)) + geom_point() + facet_grid(dependent_variable ~ scaling_period, scales="free") + geom_errorbar(limits)
+  ggplot(scaling_time_data, aes(x=cap_change_start_cap,y=(high+low)/2)) + 
+    geom_point() +
+    facet_grid(dependent_variable ~ scaling_period, scales="free") +
+    geom_errorbar(limits) +
+    xlab("CAP change - start CAP") +
+    ylab("")
   
   ggsave("experiment_parameter_control_scaling_period.png")
 }
@@ -89,7 +94,12 @@ plot_start_cap <- function(total_time, cpu_usage) {
   start_cap_data <- arrange(start_cap_data, dependent_variable, start_cap, cap_change_scaling_period)
   
   limits <- aes(ymax = start_cap_data$high, ymin = start_cap_data$low)
-  ggplot(start_cap_data, aes(x=cap_change_scaling_period,y=(high+low)/2)) + geom_point() + facet_grid(dependent_variable ~ start_cap, scales="free") + geom_errorbar(limits)
+  ggplot(start_cap_data, aes(x=cap_change_scaling_period,y=(high+low)/2)) + 
+    geom_point() + 
+    facet_grid(dependent_variable ~ start_cap, scales="free") + 
+    geom_errorbar(limits) +
+    xlab("scaling period - CAP change") +
+    ylab("")
   
   ggsave("experiment_parameter_control_start_cap.png")
 }
