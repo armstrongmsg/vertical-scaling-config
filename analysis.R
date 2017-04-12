@@ -104,5 +104,37 @@ plot_start_cap <- function(total_time, cpu_usage) {
   ggsave("experiment_parameter_control_start_cap.png")
 }
 
+plot_cap_change <- function(total_time, cpu_usage) {
+  times_cpu <- data.frame(scaling_period = total_time$scaling_period,
+                          cap_change = total_time$cap_change,
+                          start_cap = total_time$start_cap,
+                          total_time = total_time$total_time,
+                          cpu_usage = cpu_usage$cpu_usage,
+                          cap_changes = cpu_usage$cap_changes)
+  
+  # Make a column from the dependent variables columns
+  cap_change_data <- melt(times_cpu, id=c("scaling_period","cap_change","start_cap"), variable.name = "dependent_variable")
+  # Calculate confidence intervals
+  cap_change_data <- cap_change_data %>% group_by(dependent_variable, scaling_period, cap_change, start_cap) %>% summarise(low = cilow(value), high=mean(value))
+  # Separate most important factor, create columns from combinations of remaining factors
+  cap_change_data <- dcast(cap_change_data, cap_change + dependent_variable + low + high ~ scaling_period + start_cap, length)
+  # Make remaining factors combinations a single column
+  cap_change_data <- melt(cap_change_data, id=c("cap_change", "dependent_variable", "low", "high"), variable.name = "scaling_period_start_cap", value.name = "value2")
+  # Remove repeated values
+  cap_change_data <- filter(cap_change_data, value2 != 0)
+  cap_change_data <- arrange(cap_change_data, dependent_variable, cap_change, scaling_period_start_cap)
+  
+  limits <- aes(ymax = cap_change_data$high, ymin = cap_change_data$low)
+  ggplot(cap_change_data, aes(x=scaling_period_start_cap,y=(high+low)/2)) + 
+    geom_point() + 
+    facet_grid(dependent_variable ~ cap_change, scales="free") + 
+    geom_errorbar(limits) +
+    xlab("scaling period - Start CAP") +
+    ylab("")
+
+  ggsave("experiment_parameter_control_cap_change.png")
+}
+
 plot_scaling_period(total_time, cpu_usage)
 plot_start_cap(total_time, cpu_usage)
+plot_cap_change(total_time, cpu_usage)
